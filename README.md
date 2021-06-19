@@ -1,6 +1,6 @@
 # sesame3-webhook
 
-Send SESAME3 status to specified url. (HTTP Post)
+Send SESAME3 status to specified url.
 
 - [Sesame Web API](https://doc.candyhouse.co/ja/SesameAPI)
 - [mochipon/pysesame3](https://github.com/mochipon/pysesame3)
@@ -17,13 +17,21 @@ Send SESAME3 status to specified url. (HTTP Post)
 
 ### ENVIRONMENT VARIABLES
 
- * POST_URL : URL to post (Required)
+ * GET_URL : URL to get (GET or POST Required)
+ * POST_URL : URL to post (GET or POST Required)
  * SESAME_UUID : UUID of SESAME (Required)
  * SESAME_SECRET : Private key from QR code (Required)
  * SESAME_API_KEY : API key on dashboard (Required)
  * SESAME_CLIENT_ID : Client ID on dashboard (Required)
 
-## Post sample
+## GET sample
+
+{device_id} will be replaced by UUID  
+{state} will be replaced with locked or unlocked
+
+    https://example.com/?device={device_id}&status={state}
+
+## POST sample
 
     {
       "device_id": "3DE4DE72-AAF9-25C1-8D0F-C9E019BB060C",

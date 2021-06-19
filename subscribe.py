@@ -12,7 +12,7 @@ def post(client, userdata, message):
     status = CHSesame2MechStatus(rawdata=shadow["state"]["reported"]["mechst"])
     obj = {
         "timestamp": datetime.now().isoformat(timespec="seconds"),
-        "device_id": os.environ["SESAME_UUID"],
+        "device_id": os.getenv("SESAME_UUID"),
         "locked": status.isInLockRange(),
         "position": status.getPosition(),
         "target": status.getTarget(),
@@ -21,10 +21,19 @@ def post(client, userdata, message):
     if abs(obj["target"] - obj["position"]) > 45:
         return
 
-    url = os.environ["POST_URL"]
-    headers = { "Content-Type": "application/json" }
-    response = requests.post(url=url, data=json.dumps(obj), headers=headers)
-    pprint(response)
+    url = os.getenv("GET_URL")
+    if url:
+        url = url.replace("{device_id}", obj["device_id"]).replace("{state}", "locked" if obj["locked"] else "unlocked")
+        print(url)
+        response = requests.get(url)
+        print(response)
+
+    url = os.getenv("POST_URL")
+    if url:
+        print(url)
+        headers = {"Content-Type": "application/json"}
+        response = requests.post(url=url, data=json.dumps(obj), headers=headers)
+        print(response)
 
 def main():
     """
@@ -37,8 +46,8 @@ def main():
     """
     # auth = WebAPIAuth(apikey="i35ZNtt0KoOf4RpStW385HUPQwHVFM7UCiiaZD70")
     auth = CognitoAuth(
-        apikey=os.environ["SESAME_API_KEY"],
-        client_id=os.environ["SESAME_CLIENT_ID"],
+        apikey=os.getenv("SESAME_API_KEY"),
+        client_id=os.getenv("SESAME_CLIENT_ID"),
     )
 
     """
@@ -46,8 +55,8 @@ def main():
     you can get the information you need.
     https://sesame-qr-reader.vercel.app/
     """
-    your_key_uuid = os.environ["SESAME_UUID"]
-    your_key_secret = os.environ["SESAME_SECRET"]
+    your_key_uuid = os.getenv("SESAME_UUID")
+    your_key_secret = os.getenv("SESAME_SECRET")
 
     device = CHSesame2(
         authenticator=auth, device_uuid=your_key_uuid, secret_key=your_key_secret
