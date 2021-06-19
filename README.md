@@ -2,7 +2,7 @@
 
 Send SESAME3 status to specified url. (HTTP Post)
 
-- [Sesame Web API](https://github.com/mochipon/pysesame3)
+- [Sesame Web API](https://doc.candyhouse.co/ja/SesameAPI)
 - [mochipon/pysesame3](https://github.com/mochipon/pysesame3)
 
 ## Usage
