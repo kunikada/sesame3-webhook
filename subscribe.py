@@ -3,23 +3,19 @@ from datetime import datetime
 from pprint import pprint
 
 from pysesame3.auth import WebAPIAuth, CognitoAuth
-from pysesame3.lock import CHSesame2
+from pysesame3.chsesame2 import CHSesame2, CHSesame2ShadowStatus
 from pysesame3.cloud import SesameCloud
 from pysesame3.helper import CHSesame2MechStatus
 
-def post(client, userdata, message):
-    shadow = json.loads(message.payload)
-    status = CHSesame2MechStatus(rawdata=shadow["state"]["reported"]["mechst"])
+def post(device, status):
     obj = {
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "device_id": os.getenv("SESAME_UUID"),
-        "locked": status.isInLockRange(),
+        "locked": True if device.getDeviceShadowStatus() == CHSesame2ShadowStatus.LockedWm else False
         "position": status.getPosition(),
         "target": status.getTarget(),
     }
     pprint(obj)
-    if abs(obj["target"] - obj["position"]) > 45:
-        return
 
     url = os.getenv("GET_URL")
     if url:
