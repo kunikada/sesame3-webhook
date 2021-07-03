@@ -2,24 +2,19 @@ import os, time, json, requests
 from datetime import datetime
 from pprint import pprint
 
-from pysesame3.auth import WebAPIAuth, CognitoAuth
-from pysesame3.lock import CHSesame2
+from pysesame3.auth import CognitoAuth, WebAPIAuth
 from pysesame3.cloud import SesameCloud
 from pysesame3.helper import CHSesame2MechStatus
+from pysesame3.chsesame2 import CHSesame2
 
-def post(client, userdata, message):
-    shadow = json.loads(message.payload)
-    status = CHSesame2MechStatus(rawdata=shadow["state"]["reported"]["mechst"])
+
+def callback(device: CHSesame2, status: CHSesame2MechStatus):
     obj = {
         "timestamp": datetime.now().isoformat(timespec="seconds"),
-        "device_id": os.getenv("SESAME_UUID"),
+        "device_id": device.getDeviceUUID(),
         "locked": status.isInLockRange(),
-        "position": status.getPosition(),
-        "target": status.getTarget(),
     }
     pprint(obj)
-    if abs(obj["target"] - obj["position"]) > 45:
-        return
 
     url = os.getenv("GET_URL")
     if url:
@@ -42,9 +37,9 @@ def main():
     If you want to use it, run `pip install pysesame3[cognito]` instead of `pip install pysesame3`.
 
     WebAPIAuth: (Common) Using the Web API.
-    CognitoAuth: (Optional) Behave like a mobile app by using the provided SDKs for iOS/Android.
+    CognitoAuth: (Optional) Behave like a mobile app.
     """
-    # auth = WebAPIAuth(apikey="i35ZNtt0KoOf4RpStW385HUPQwHVFM7UCiiaZD70")
+    # auth = WebAPIAuth(apikey="API_KEY")
     auth = CognitoAuth(
         apikey=os.getenv("SESAME_API_KEY"),
         client_id=os.getenv("SESAME_CLIENT_ID"),
@@ -67,14 +62,14 @@ def main():
     https://doc.candyhouse.co/ja/reference#chsesameprotocolmechstatus
 
     Please note that `mechStatus` always queries the server for the latest status.
-    Calling it too often would stress the service, which lead to rate limits
+    Calling it too often would stress the service, which leads to rate limits
     and other restrictions.
 
     On the other hand, `getDeviceShadowStatus` does not query the server,
-    but returns a **shadow** which is the status **stored on this library**.
+    but returns a **shadow** which is the status **stored in this library**.
 
     If you are operating the key only in this library, ideally,
-    this shadow will perfectly sync the real state.
+    this shadow will be perfectly consistent with the actual state.
     """
     print("=" * 10)
     print("[Initial MechStatus]")
@@ -89,33 +84,11 @@ def main():
     The mobile app shows the status of the key in almost real time.
     In the same way, you can **subscribe** to `mechStatus`.
     """
-    device.subscribeMechStatus(post)
+    device.subscribeMechStatus(callback)
 
-    print("=" * 10)
-    print("[History]")
-    for entry in device.historyEntries:
-        pprint(entry.to_dict())
-
-    #print("=" * 10)
-    #print("[Prompt]")
     while True:
-        #val = input("Action [lock/unlock/toggle]: ")
-
-        #if val == "lock":
-        #    device.lock(history_tag="My Script")
-        #elif val == "unlock":
-        #    device.unlock(history_tag="My Script")
-        #elif val == "toggle":
-        #    device.toggle(history_tag="My Script")
-        #else:
-        #    continue
-
         time.sleep(5)
-        #print((str(device.mechStatus)))
-        # => CHSesame2MechStatus(Battery=100% (6.09V), isInLockRange=True, isInUnlockRange=False, Position=25)
 
 
 if __name__ == "__main__":
     main()
-
-
