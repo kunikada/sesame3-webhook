@@ -1,0 +1,4 @@
+157c157
+<         self._iot_client.connect()
+---
+>         self._iot_client.connect(60)
