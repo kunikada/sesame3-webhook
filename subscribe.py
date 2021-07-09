@@ -2,17 +2,17 @@ import os, time, json, requests
 from datetime import datetime
 from pprint import pprint
 
-from pysesame3.auth import CognitoAuth, WebAPIAuth
+
+from pysesame3.auth import WebAPIAuth, CognitoAuth
+from pysesame3.chsesame2 import CHSesame2, CHSesame2ShadowStatus
 from pysesame3.cloud import SesameCloud
 from pysesame3.helper import CHSesame2MechStatus
-from pysesame3.chsesame2 import CHSesame2
-
 
 def callback(device: CHSesame2, status: CHSesame2MechStatus):
     obj = {
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "device_id": device.getDeviceUUID(),
-        "locked": status.isInLockRange(),
+        "locked": True if device.getDeviceShadowStatus() == CHSesame2ShadowStatus.LockedWm else False,
     }
     pprint(obj)
 
