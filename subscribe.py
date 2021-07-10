@@ -85,9 +85,7 @@ def main():
     In the same way, you can **subscribe** to `mechStatus`.
     """
     device.subscribeMechStatus(callback)
-
-    while True:
-        time.sleep(5)
+    time.sleep(24 * 60 * 60)
 
 
 if __name__ == "__main__":
