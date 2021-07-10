@@ -13,6 +13,7 @@ Send SESAME3 status to specified url.
            -e SESAME_SECRET=a13d4b890111676ba8fb36ece7e94f7d \
            -e SESAME_API_KEY=M10YD4NKnP3BzIraDzINg9vcjOzEc2uP3DWb2HJn \
            -e SESAME_CLIENT_ID=us-west-1:a145fc1a-d0a8-11eb-b8bc-0242ac130003 \
+           --restart=always \
            -d kunikada/sesame3-webhook
 
 ### ENVIRONMENT VARIABLES
