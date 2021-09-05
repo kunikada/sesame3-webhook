@@ -1,14 +1,21 @@
 import os, time, json, requests
 from datetime import datetime
 from pprint import pprint
+from typing import TYPE_CHECKING, Union
+
+from pysesame3.auth import CognitoAuth, WebAPIAuth
+from pysesame3.chsesame2 import CHSesame2, CHSesame2ShadowStatus  # For SESAME 3
+from pysesame3.chsesamebot import CHSesameBot  # For SESAME bot
+from pysesame3.helper import CHProductModel
+
+if TYPE_CHECKING:
+    from pysesame3.device import SesameLocker
+    from pysesame3.helper import CHSesame2MechStatus, CHSesameBotMechStatus
 
 
-from pysesame3.auth import WebAPIAuth, CognitoAuth
-from pysesame3.chsesame2 import CHSesame2, CHSesame2ShadowStatus
-from pysesame3.cloud import SesameCloud
-from pysesame3.helper import CHSesame2MechStatus
-
-def callback(device: CHSesame2, status: CHSesame2MechStatus):
+def callback(
+    device: "SesameLocker", status: Union["CHSesame2MechStatus", "CHSesameBotMechStatus"]
+):
     obj = {
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "device_id": device.getDeviceUUID(),
@@ -29,6 +36,7 @@ def callback(device: CHSesame2, status: CHSesame2MechStatus):
         headers = {"Content-Type": "application/json"}
         response = requests.post(url=url, data=json.dumps(obj), headers=headers)
         print(response)
+
 
 def main():
     """
@@ -53,6 +61,12 @@ def main():
     your_key_uuid = os.getenv("SESAME_UUID")
     your_key_secret = os.getenv("SESAME_SECRET")
 
+    """
+    This library supports SESAME3 and SESAME bot.
+
+    `CHSesame2`: SESAME3
+    `CHSesameBot`: SESAME bot
+    """
     device = CHSesame2(
         authenticator=auth, device_uuid=your_key_uuid, secret_key=your_key_secret
     )
@@ -85,7 +99,48 @@ def main():
     In the same way, you can **subscribe** to `mechStatus`.
     """
     device.subscribeMechStatus(callback)
-    time.sleep(24 * 60 * 60)
+
+    """
+    It also supports environments where multiple locks are being installed.
+
+    your_2nd_key_uuid = "UUID"
+    your_2nd_key_secret = "SECRET_KEY"
+
+    device2 = CHSesame2(
+        authenticator=auth,
+        device_uuid=your_2nd_key_uuid,
+        secret_key=your_2nd_key_secret,
+    )
+    device2.subscribeMechStatus(callback)
+    """
+
+    """
+    print("=" * 10)
+    print("[History]")
+    for entry in device.historyEntries:
+        pprint(entry.to_dict())
+
+    print("=" * 10)
+    print("[Prompt]")
+    while True:
+        val = input("Action [lock/unlock/toggle/click]: ")
+
+        if device.productModel == CHProductModel.SS2:
+            if val == "lock":
+                device.lock(history_tag="My Script")
+            elif val == "unlock":
+                device.unlock(history_tag="My Script")
+            elif val == "toggle":
+                device.toggle(history_tag="My Script")
+
+        if device.productModel == CHProductModel.SesameBot1:
+            if val == "click":
+                device.click(history_tag="My Script")
+
+        continue
+    """
+    while True:
+        time.sleep(10)
 
 
 if __name__ == "__main__":
